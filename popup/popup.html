@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>코드잽에 로그인해보세요</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        width: 250px;
+      }
+      input,
+      button {
+        display: block;
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 8px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #welcome-message,
+      #logout-button {
+        display: none;
+      }
+      #login-form {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="welcome-message">
+      <h2>코드잽 익스텐션</h2>
+      <p>원하는 소스코드를 드래그 후 우클릭하여 업로드해보세요 :)</p>
+      <button id="logout-button">Logout</button>
+    </div>
+
+    <div id="login-form">
+      <h2>로그인</h2>
+      <input id="name" type="text" placeholder="아이디" />
+      <input id="password" type="password" placeholder="비밀번호" />
+      <button id="login-button">로그인</button>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
