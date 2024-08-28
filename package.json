@@ -1,17 +1,28 @@
 {
   "name": "codezap-chrome-extension",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "코드잽 크롬 익스텐션입니다",
-  "main": "background.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack --watch --progress --config webpack.dev.js",
+    "build": "webpack --watch --progress --config webpack.prod.js"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.270",
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^7.0.0",
+    "css-loader": "^5.0.1",
+    "html-webpack-plugin": "^4.5.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "style-loader": "^2.0.0",
+    "terser-webpack-plugin": "^5.1.1",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.5.4",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
   },
   "author": "jayMyong66",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/chrome": "^0.0.270"
-  },
-  "dependencies": {
-    "chrome": "^0.1.0"
-  }
+  "license": "MIT"
 }
