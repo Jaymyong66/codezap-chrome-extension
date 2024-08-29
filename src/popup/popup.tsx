@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import LoginForm from '../components/LoginForm';
-import Logout from '../components/Logout';
+import { LoginForm, LogoutButton } from '../components';
 import {
   loginUser,
   logoutUser,
@@ -11,8 +10,14 @@ import {
 } from '../utils/api';
 import config from '../../config';
 
+import styles from './popup.module.css';
+import '../styles/reset.css';
+
 const Popup = () => {
-  const [userInfo, setUserInfo] = useState<UserInfo | undefined>(undefined);
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    name: undefined,
+    memberId: undefined,
+  });
   const [categories, setCategories] = useState<Category[]>([]);
   const [sourceCodes, setSourceCodes] = useState<string[]>([]);
   const [title, setTitle] = useState('');
@@ -148,18 +153,23 @@ const Popup = () => {
   };
 
   return (
-    <div>
+    <>
       {userInfo ? (
-        <div>
-          <Logout onLogout={handleLogout} />
-          <h2>코드 템플릿 업로드</h2>
+        <div className={styles.popupContainer}>
+          <div className={styles.popupHeaderContainer}>
+            <h2 className={styles.popupTitle}>코드잽 템플릿 업로드</h2>
+            <LogoutButton onLogout={handleLogout} />
+          </div>
+
           <input
+            className={styles.titleInput}
             type='text'
             placeholder='템플릿 제목을 입력해주세요'
             value={title}
             onChange={handleTitleChange}
           />
           <select
+            className={styles.categorySelect}
             value={selectedCategoryId || ''}
             onChange={handleCategoryChange}
           >
@@ -174,13 +184,13 @@ const Popup = () => {
           </select>
           {sourceCodes.map((code, index) => (
             <div key={index}>
-              <textarea readOnly value={code} rows={4} cols={35} />
               <input
                 type='text'
                 placeholder='파일명을 입력해주세요'
                 value={fileNames[index]}
                 onChange={(e) => handleFileNameChange(index, e.target.value)}
               />
+              <textarea readOnly value={code} rows={4} cols={35} />
             </div>
           ))}
           <button onClick={handleUpload}>업로드</button>
@@ -188,7 +198,7 @@ const Popup = () => {
       ) : (
         <LoginForm onLogin={handleLogin} />
       )}
-    </div>
+    </>
   );
 };
 

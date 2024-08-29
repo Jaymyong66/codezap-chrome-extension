@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-interface LoginFormProps {
+interface Props {
   onLogin: (username: string, password: string) => void;
 }
 
-const LoginForm = ({ onLogin }: LoginFormProps) => {
+const LoginForm = ({ onLogin }: Props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 

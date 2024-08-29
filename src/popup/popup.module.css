@@ -1,0 +1,32 @@
+.popupHeaderContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.popupTitle {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 120%;
+}
+
+.popupContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  gap: 16px;
+}
+
+.categorySelect {
+  border: 1px solid black;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.titleInput {
+  height: 32px;
+  width: 100%;
+}
