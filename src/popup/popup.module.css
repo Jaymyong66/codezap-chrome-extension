@@ -45,6 +45,7 @@
 
 .sourceCodeTextArea {
   resize: none;
+  cursor: auto;
   width: 100%;
   padding: 8px;
 
@@ -104,4 +105,19 @@
   &:hover {
     background-color: #f6a739;
   }
+}
+
+.sourceCodeContainer {
+  position: relative;
+}
+
+.removeButton {
+  cursor: pointer;
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background-color: #ff9500;
+  color: white;
 }

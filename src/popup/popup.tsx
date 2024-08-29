@@ -12,6 +12,7 @@ import {
   getStoredUserInfo,
   getStoredSourceCodes,
   setStoredUserInfo,
+  setStoredSourceCodes,
 } from '../utils/storage';
 import config from '../../config';
 
@@ -108,6 +109,16 @@ const Popup = () => {
     setSelectedCategoryId(categoryId);
   };
 
+  const handleRemoveSourceCode = (index: number) => {
+    const newSourceCodes = [...sourceCodes];
+    const newFileNames = [...fileNames];
+    newSourceCodes.splice(index, 1);
+    newFileNames.splice(index, 1);
+    setSourceCodes(newSourceCodes);
+    setFileNames(newFileNames);
+    setStoredSourceCodes(newSourceCodes);
+  };
+
   const handleUpload = async () => {
     if (
       !title ||
@@ -202,7 +213,7 @@ const Popup = () => {
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
           )}
           {sourceCodes.map((code, index) => (
-            <div key={index}>
+            <div key={index} className={styles.sourceCodeContainer}>
               <input
                 type='text'
                 placeholder='파일명을 입력해주세요'
@@ -217,6 +228,12 @@ const Popup = () => {
                 cols={35}
                 className={styles.sourceCodeTextArea}
               />
+              <button
+                onClick={() => handleRemoveSourceCode(index)}
+                className={styles.removeButton}
+              >
+                X
+              </button>
             </div>
           ))}
           <button className={styles.uploadButton} onClick={handleUpload}>
