@@ -187,13 +187,22 @@ const Popup = () => {
               <input
                 type='text'
                 placeholder='파일명을 입력해주세요'
+                className={styles.fileNameInput}
                 value={fileNames[index]}
                 onChange={(e) => handleFileNameChange(index, e.target.value)}
               />
-              <textarea readOnly value={code} rows={4} cols={35} />
+              <textarea
+                readOnly
+                value={code}
+                rows={4}
+                cols={35}
+                className={styles.sourceCodeTextArea}
+              />
             </div>
           ))}
-          <button onClick={handleUpload}>업로드</button>
+          <button className={styles.uploadButton} onClick={handleUpload}>
+            업로드
+          </button>
         </div>
       ) : (
         <LoginForm onLogin={handleLogin} />
