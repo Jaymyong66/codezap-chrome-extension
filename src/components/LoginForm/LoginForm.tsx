@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import styles from './LoginForm.module.css';
 
 interface Props {
   onLogin: (username: string, password: string) => void;
@@ -13,12 +14,13 @@ const LoginForm = ({ onLogin }: Props) => {
   };
 
   return (
-    <div id='login-form'>
-      <h2>로그인</h2>
+    <div className={styles.loginFormContainer}>
+      <h2 className={styles.loginFormTitle}>코드잽 익스텐션</h2>
       <input
         id='name'
         type='text'
         placeholder='아이디'
+        className={styles.loginFormInput}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
@@ -26,10 +28,11 @@ const LoginForm = ({ onLogin }: Props) => {
         id='password'
         type='password'
         placeholder='비밀번호'
+        className={styles.loginFormInput}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button id='login-button' onClick={handleLogin}>
+      <button className={styles.loginButton} onClick={handleLogin}>
         로그인
       </button>
     </div>
