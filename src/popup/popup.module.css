@@ -67,3 +67,41 @@
     background-color: #f6a739;
   }
 }
+
+.loginFormContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+}
+
+.loginFormTitle {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 120%;
+}
+
+.loginFormInput {
+  height: 32px;
+  width: 100%;
+
+  padding-left: 4px;
+  border: 1px solid black;
+  border-radius: 8px;
+}
+
+.loginButton {
+  background-color: #ff9500;
+  color: white;
+  border: none;
+  cursor: pointer;
+
+  padding: 8px;
+  border-radius: 4px;
+  width: 100%;
+
+  &:hover {
+    background-color: #f6a739;
+  }
+}

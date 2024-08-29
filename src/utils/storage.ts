@@ -1,11 +1,16 @@
-export interface LocalStorage {
+export interface StoredSourceCodes {
   sourceCodes?: string[];
 }
 
-export type LocalStorageKeys = keyof LocalStorage;
+export interface StoredUserInfo {
+  name: string;
+  memberId: number;
+}
+
+type StoredSourceCodesKeys = keyof StoredSourceCodes;
 
 export function setStoredSourceCodes(sourceCodes: string[]): Promise<void> {
-  const codes: LocalStorage = {
+  const codes: StoredSourceCodes = {
     sourceCodes,
   };
   return new Promise((resolve) => {
@@ -16,10 +21,29 @@ export function setStoredSourceCodes(sourceCodes: string[]): Promise<void> {
 }
 
 export function getStoredSourceCodes(): Promise<string[]> {
-  const keys: LocalStorageKeys[] = ['sourceCodes'];
+  const keys: StoredSourceCodesKeys[] = ['sourceCodes'];
   return new Promise((resolve) => {
-    chrome.storage.local.get(keys, (res: LocalStorage) => {
+    chrome.storage.local.get(keys, (res: StoredSourceCodes) => {
       resolve(res.sourceCodes ?? []);
+    });
+  });
+}
+
+export function setStoredUserInfo(userInfo: StoredUserInfo): Promise<void> {
+  const storedUserInfo = {
+    userInfo,
+  };
+  return new Promise((resolve) => {
+    chrome.storage.local.set(storedUserInfo, () => {
+      resolve();
+    });
+  });
+}
+
+export function getStoredUserInfo(): Promise<StoredUserInfo> {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['userInfo'], (res) => {
+      resolve(res.userInfo ?? { name: '', memberId: 0 });
     });
   });
 }

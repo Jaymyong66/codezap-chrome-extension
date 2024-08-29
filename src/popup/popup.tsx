@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { LoginForm, LogoutButton } from '../components';
+import { LogoutButton } from '../components';
 import {
   loginUser,
   logoutUser,
@@ -8,6 +8,11 @@ import {
   Category,
   UserInfo,
 } from '../utils/api';
+import {
+  getStoredUserInfo,
+  getStoredSourceCodes,
+  setStoredUserInfo,
+} from '../utils/storage';
 import config from '../../config';
 
 import styles from './popup.module.css';
@@ -25,18 +30,26 @@ const Popup = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     number | undefined
   >(undefined);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
-    chrome.storage.local.get(['userInfo', 'sourceCodes'], (result) => {
-      if (result.userInfo) {
-        setUserInfo(result.userInfo);
-        loadCategories(result.userInfo.memberId);
+    const initializePopup = async () => {
+      const storedUserInfo = await getStoredUserInfo();
+      const storedSourceCodes = await getStoredSourceCodes();
+
+      if (storedUserInfo && storedUserInfo.memberId) {
+        setUserInfo(storedUserInfo);
+        loadCategories(storedUserInfo.memberId);
       }
-      if (result.sourceCodes) {
-        setSourceCodes(result.sourceCodes);
-        setFileNames(result.sourceCodes.map(() => ''));
+
+      if (storedSourceCodes.length > 0) {
+        setSourceCodes(storedSourceCodes);
+        setFileNames(storedSourceCodes.map(() => ''));
       }
-    });
+    };
+
+    initializePopup();
   }, []);
 
   const loadCategories = async (memberId: number) => {
@@ -52,7 +65,7 @@ const Popup = () => {
   const handleLogin = async (username: string, password: string) => {
     try {
       const { name, memberId } = await loginUser(username, password);
-      chrome.storage.local.set({ userInfo: { name, memberId } });
+      await setStoredUserInfo({ name, memberId });
       setUserInfo({ name, memberId });
       loadCategories(memberId);
       alert('로그인에 성공했어요!');
@@ -66,7 +79,10 @@ const Popup = () => {
     try {
       await logoutUser();
       chrome.storage.local.remove(['userInfo', 'categories'], () => {
-        setUserInfo(undefined);
+        setUserInfo({
+          name: undefined,
+          memberId: undefined,
+        });
         setCategories([]);
         alert('로그아웃 성공!');
       });
@@ -137,7 +153,6 @@ const Popup = () => {
         //   title: '코드잽',
         //   message: '소스코드 업로드가 성공했어요!',
         // });
-
         setTitle('');
         setFileNames(sourceCodes.map(() => ''));
         setSelectedCategoryId(undefined);
@@ -154,7 +169,7 @@ const Popup = () => {
 
   return (
     <>
-      {userInfo ? (
+      {userInfo.memberId !== undefined ? (
         <div className={styles.popupContainer}>
           <div className={styles.popupHeaderContainer}>
             <h2 className={styles.popupTitle}>코드잽 템플릿 업로드</h2>
@@ -182,6 +197,9 @@ const Popup = () => {
               </option>
             ))}
           </select>
+          {sourceCodes.length === 0 && (
+            <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
+          )}
           {sourceCodes.map((code, index) => (
             <div key={index}>
               <input
@@ -205,16 +223,38 @@ const Popup = () => {
           </button>
         </div>
       ) : (
-        <LoginForm onLogin={handleLogin} />
+        <div className={styles.loginFormContainer}>
+          <h2 className={styles.loginFormTitle}>코드잽 익스텐션</h2>
+          <input
+            id='name'
+            type='text'
+            placeholder='아이디'
+            className={styles.loginFormInput}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            id='password'
+            type='password'
+            placeholder='비밀번호'
+            className={styles.loginFormInput}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            className={styles.loginButton}
+            onClick={() => handleLogin(username, password)}
+          >
+            로그인
+          </button>
+        </div>
       )}
     </>
   );
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  const rootElement = document.getElementById('root');
-  if (rootElement) {
-    const root = createRoot(rootElement);
-    root.render(<Popup />);
-  }
-});
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(<Popup />);
+}
