@@ -62,7 +62,8 @@ const Popup = () => {
     }
   };
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     try {
       const { name, memberId } = await loginUser(username, password);
       await setStoredUserInfo({ name, memberId });
@@ -223,7 +224,10 @@ const Popup = () => {
           </button>
         </div>
       ) : (
-        <div className={styles.loginFormContainer}>
+        <form
+          className={styles.loginFormContainer}
+          onSubmit={handleLoginSubmit}
+        >
           <h2 className={styles.loginFormTitle}>코드잽 익스텐션</h2>
           <input
             id='name'
@@ -241,13 +245,10 @@ const Popup = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button
-            className={styles.loginButton}
-            onClick={() => handleLogin(username, password)}
-          >
+          <button type='submit' className={styles.loginButton}>
             로그인
           </button>
-        </div>
+        </form>
       )}
     </>
   );
