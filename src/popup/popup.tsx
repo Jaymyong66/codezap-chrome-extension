@@ -13,6 +13,12 @@ import {
   getStoredSourceCodes,
   setStoredUserInfo,
   setStoredSourceCodes,
+  getStoredTitle,
+  getStoredCategory,
+  getStoredFileNames,
+  setStoredTitle,
+  setStoredCategory,
+  setStoredFileNames,
 } from '../utils/storage';
 import config from '../../config';
 
@@ -38,6 +44,9 @@ const Popup = () => {
     const initializePopup = async () => {
       const storedUserInfo = await getStoredUserInfo();
       const storedSourceCodes = await getStoredSourceCodes();
+      const storedTitle = await getStoredTitle();
+      const storedCategoryId = await getStoredCategory();
+      const storedFileNames = await getStoredFileNames();
 
       if (storedUserInfo && storedUserInfo.memberId) {
         setUserInfo(storedUserInfo);
@@ -46,8 +55,15 @@ const Popup = () => {
 
       if (storedSourceCodes.length > 0) {
         setSourceCodes(storedSourceCodes);
-        setFileNames(storedSourceCodes.map(() => ''));
+        setFileNames(
+          storedFileNames.length > 0
+            ? storedFileNames
+            : storedSourceCodes.map(() => '')
+        );
       }
+
+      setTitle(storedTitle);
+      setSelectedCategoryId(storedCategoryId);
     };
 
     initializePopup();
@@ -58,6 +74,8 @@ const Popup = () => {
       const data = await fetchCategories(memberId);
       setCategories(data.categories);
       chrome.storage.local.set({ categories: data.categories });
+
+      setSelectedCategoryId(data.categories[0].id);
     } catch (error) {
       console.error('카테고리를 가져오는데 실패했어요:', error);
     }
@@ -95,18 +113,22 @@ const Popup = () => {
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    setStoredTitle(newTitle);
   };
 
   const handleFileNameChange = (index: number, fileName: string) => {
     const newFileNames = [...fileNames];
     newFileNames[index] = fileName;
     setFileNames(newFileNames);
+    setStoredFileNames(newFileNames);
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const categoryId = parseInt(e.target.value, 10);
     setSelectedCategoryId(categoryId);
+    setStoredCategory(categoryId);
   };
 
   const handleRemoveSourceCode = (index: number) => {
@@ -159,6 +181,7 @@ const Popup = () => {
 
       if (response.ok) {
         alert('소스코드가 성공적으로 업로드되었어요!');
+
         // chrome.notifications.create({
         //   type: 'basic',
         //   iconUrl: 'icons/icon48.png',
@@ -166,9 +189,12 @@ const Popup = () => {
         //   message: '소스코드 업로드가 성공했어요!',
         // });
         setTitle('');
-        setFileNames(sourceCodes.map(() => ''));
+        setFileNames([]);
         setSelectedCategoryId(undefined);
         setSourceCodes([]);
+        setStoredTitle('');
+        setStoredCategory(categories[0].id);
+        setStoredFileNames([]);
         chrome.storage.local.remove('sourceCodes');
       } else {
         alert('소스코드 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
