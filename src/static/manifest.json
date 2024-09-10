@@ -3,14 +3,7 @@
   "name": "코드잽 익스텐션",
   "version": "0.0.4",
   "description": "코드잽 템플릿 업로드를 도와주는 익스텐션입니다.",
-  "permissions": [
-    "notifications",
-    "cookies",
-    "contextMenus",
-    "activeTab",
-    "scripting",
-    "storage"
-  ],
+  "permissions": ["contextMenus", "storage", "scripting", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },

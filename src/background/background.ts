@@ -8,10 +8,22 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-chrome.contextMenus.onClicked.addListener((event) => {
-  if (event.menuItemId === 'uploadToCodeZap' && event.selectionText) {
-    getStoredSourceCodes().then((codes) => {
-      setStoredSourceCodes([...codes, event.selectionText]);
-    });
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'uploadToCodeZap' && info.selectionText) {
+    // info.selectionText를 그대로 쓰면 개행이 없음. executeScript로 getSelection() 활용
+    chrome.scripting
+      .executeScript({
+        target: { tabId: tab.id },
+        func: () => window.getSelection().toString(),
+      })
+      .then((selectionArray) => {
+        const selectedText = selectionArray[0]?.result || '';
+
+        if (selectedText) {
+          getStoredSourceCodes().then((codes) => {
+            setStoredSourceCodes([...codes, selectedText]);
+          });
+        }
+      });
   }
 });
