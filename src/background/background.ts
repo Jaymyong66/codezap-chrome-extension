@@ -21,7 +21,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
         if (selectedText) {
           getStoredSourceCodes().then((codes) => {
-            setStoredSourceCodes([...codes, selectedText]);
+            setStoredSourceCodes([...codes, selectedText]).then(() => {
+              chrome.action.openPopup();
+            });
           });
         }
       });
