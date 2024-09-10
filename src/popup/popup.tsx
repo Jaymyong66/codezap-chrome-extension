@@ -180,14 +180,14 @@ const Popup = () => {
       });
 
       if (response.ok) {
-        alert('소스코드가 성공적으로 업로드되었어요!');
+        if (
+          window.confirm(
+            '소스코드가 성공적으로 업로드되었어요! 코드잽에서 확인해볼까요?'
+          )
+        ) {
+          chrome.tabs.create({ url: 'https://www.code-zap.com/my-templates' });
+        }
 
-        // chrome.notifications.create({
-        //   type: 'basic',
-        //   iconUrl: 'icons/icon48.png',
-        //   title: '코드잽',
-        //   message: '소스코드 업로드가 성공했어요!',
-        // });
         setTitle('');
         setFileNames([]);
         setSelectedCategoryId(undefined);
