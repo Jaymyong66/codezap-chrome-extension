@@ -89,6 +89,19 @@ const Popup = () => {
       setUserInfo({ name, memberId });
       loadCategories(memberId);
       alert('로그인에 성공했어요!');
+      // 추가
+      console.log('here ', name, memberId);
+      chrome.runtime.sendMessage(
+        {
+          action: 'sendUserInfo',
+          name,
+          memberId,
+        },
+        (response) => {
+          console.log('send message response', response);
+        }
+      );
+      // 끝
     } catch (error) {
       console.error('로그인 에러: ', error);
       alert(error.message);

@@ -1,5 +1,23 @@
 import { getStoredSourceCodes, setStoredSourceCodes } from '../utils/storage';
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'pageLoaded') {
+    chrome.storage.local.get('userInfo', ({ userInfo }) => {
+      const { memberId, name } = userInfo;
+
+      if (memberId && name) {
+        chrome.tabs.sendMessage(sender.tab.id, {
+          action: 'sendUserInfo',
+          memberId,
+          name,
+        });
+      } else {
+        console.warn('memberId 또는 name이 저장되어 있지 않습니다.');
+      }
+    });
+  }
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'uploadToCodeZap',
