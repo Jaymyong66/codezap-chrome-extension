@@ -19,12 +19,14 @@ import {
   setStoredTitle,
   setStoredCategory,
   setStoredFileNames,
+  getStoredDescription,
 } from '../utils/storage';
 import config from '../../config';
 
 import styles from './popup.module.css';
 import '../styles/reset.css';
 import VisibilityToggle from '../components/VisibilityToggle/VisibilityToggle';
+import { urlToDescription } from '../utils/urlToDescription';
 
 const Popup = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -39,6 +41,7 @@ const Popup = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     number | undefined
   >(undefined);
+  const [description, setDescription] = useState<string[]>([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -49,6 +52,7 @@ const Popup = () => {
       const storedTitle = await getStoredTitle();
       const storedCategoryId = await getStoredCategory();
       const storedFileNames = await getStoredFileNames();
+      const storedDescription = await getStoredDescription();
 
       if (storedUserInfo && storedUserInfo.memberId) {
         setUserInfo(storedUserInfo);
@@ -66,6 +70,7 @@ const Popup = () => {
 
       setTitle(storedTitle);
       setSelectedCategoryId(storedCategoryId);
+      setDescription(storedDescription);
     };
 
     initializePopup();
@@ -119,6 +124,7 @@ const Popup = () => {
           memberId: undefined,
         });
         setCategories([]);
+        resetTemplateData();
         alert('로그아웃 성공!');
       });
     } catch (error) {
@@ -153,11 +159,26 @@ const Popup = () => {
   const handleRemoveSourceCode = (index: number) => {
     const newSourceCodes = [...sourceCodes];
     const newFileNames = [...fileNames];
+    const newDescription = [...description];
     newSourceCodes.splice(index, 1);
     newFileNames.splice(index, 1);
+    newDescription.splice(index, 1);
     setSourceCodes(newSourceCodes);
     setFileNames(newFileNames);
     setStoredSourceCodes(newSourceCodes);
+  };
+
+  const resetTemplateData = () => {
+    setTitle('');
+    setFileNames([]);
+    setSelectedCategoryId(undefined);
+    setSourceCodes([]);
+    setStoredTitle('');
+    setStoredCategory(categories[0].id);
+    setStoredFileNames([]);
+    setDescription([]);
+    chrome.storage.local.remove('sourceCodes');
+    chrome.storage.local.remove('description');
   };
 
   const handleUpload = async () => {
@@ -177,7 +198,7 @@ const Popup = () => {
 
     const requestBody = {
       title,
-      description: '사용자가 생성한 코드 템플릿',
+      description: urlToDescription(description),
       sourceCodes: sourceCodes.map((code, index) => ({
         filename: fileNames[index],
         content: code,
@@ -205,17 +226,12 @@ const Popup = () => {
             '소스코드가 성공적으로 업로드되었어요! 코드잽에서 확인해볼까요?'
           )
         ) {
-          chrome.tabs.create({ url: 'https://www.code-zap.com/my-templates' });
+          chrome.tabs.create({
+            url: `https://www.code-zap.com/members/${userInfo.memberId}/templates`,
+          });
         }
 
-        setTitle('');
-        setFileNames([]);
-        setSelectedCategoryId(undefined);
-        setSourceCodes([]);
-        setStoredTitle('');
-        setStoredCategory(categories[0].id);
-        setStoredFileNames([]);
-        chrome.storage.local.remove('sourceCodes');
+        resetTemplateData();
       } else {
         alert('소스코드 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       }
