@@ -121,3 +121,10 @@
   background-color: #ff9500;
   color: white;
 }
+
+.categoryVisibilityContainer {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}

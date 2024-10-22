@@ -13,11 +13,18 @@ import {
   getStoredSourceCodes,
   setStoredUserInfo,
   setStoredSourceCodes,
+  getStoredTitle,
+  getStoredCategory,
+  getStoredFileNames,
+  setStoredTitle,
+  setStoredCategory,
+  setStoredFileNames,
 } from '../utils/storage';
 import config from '../../config';
 
 import styles from './popup.module.css';
 import '../styles/reset.css';
+import VisibilityToggle from '../components/VisibilityToggle/VisibilityToggle';
 
 const Popup = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -25,6 +32,7 @@ const Popup = () => {
     memberId: undefined,
   });
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [sourceCodes, setSourceCodes] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [fileNames, setFileNames] = useState<string[]>([]);
@@ -38,6 +46,9 @@ const Popup = () => {
     const initializePopup = async () => {
       const storedUserInfo = await getStoredUserInfo();
       const storedSourceCodes = await getStoredSourceCodes();
+      const storedTitle = await getStoredTitle();
+      const storedCategoryId = await getStoredCategory();
+      const storedFileNames = await getStoredFileNames();
 
       if (storedUserInfo && storedUserInfo.memberId) {
         setUserInfo(storedUserInfo);
@@ -46,8 +57,15 @@ const Popup = () => {
 
       if (storedSourceCodes.length > 0) {
         setSourceCodes(storedSourceCodes);
-        setFileNames(storedSourceCodes.map(() => ''));
+        setFileNames(
+          storedFileNames.length > 0
+            ? storedFileNames
+            : storedSourceCodes.map(() => '')
+        );
       }
+
+      setTitle(storedTitle);
+      setSelectedCategoryId(storedCategoryId);
     };
 
     initializePopup();
@@ -58,6 +76,8 @@ const Popup = () => {
       const data = await fetchCategories(memberId);
       setCategories(data.categories);
       chrome.storage.local.set({ categories: data.categories });
+
+      setSelectedCategoryId(data.categories[0].id);
     } catch (error) {
       console.error('카테고리를 가져오는데 실패했어요:', error);
     }
@@ -71,6 +91,19 @@ const Popup = () => {
       setUserInfo({ name, memberId });
       loadCategories(memberId);
       alert('로그인에 성공했어요!');
+      // 추가
+      console.log('here ', name, memberId);
+      chrome.runtime.sendMessage(
+        {
+          action: 'sendUserInfo',
+          name,
+          memberId,
+        },
+        (response) => {
+          console.log('send message response', response);
+        }
+      );
+      // 끝
     } catch (error) {
       console.error('로그인 에러: ', error);
       alert(error.message);
@@ -95,18 +128,26 @@ const Popup = () => {
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    setStoredTitle(newTitle);
   };
 
   const handleFileNameChange = (index: number, fileName: string) => {
     const newFileNames = [...fileNames];
     newFileNames[index] = fileName;
     setFileNames(newFileNames);
+    setStoredFileNames(newFileNames);
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const categoryId = parseInt(e.target.value, 10);
     setSelectedCategoryId(categoryId);
+    setStoredCategory(categoryId);
+  };
+
+  const toggleVisibility = () => {
+    setIsPrivate(!isPrivate);
   };
 
   const handleRemoveSourceCode = (index: number) => {
@@ -145,6 +186,7 @@ const Popup = () => {
       thumbnailOrdinal: 1,
       categoryId: selectedCategoryId,
       tags: [],
+      visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
     };
 
     try {
@@ -158,17 +200,21 @@ const Popup = () => {
       });
 
       if (response.ok) {
-        alert('소스코드가 성공적으로 업로드되었어요!');
-        // chrome.notifications.create({
-        //   type: 'basic',
-        //   iconUrl: 'icons/icon48.png',
-        //   title: '코드잽',
-        //   message: '소스코드 업로드가 성공했어요!',
-        // });
+        if (
+          window.confirm(
+            '소스코드가 성공적으로 업로드되었어요! 코드잽에서 확인해볼까요?'
+          )
+        ) {
+          chrome.tabs.create({ url: 'https://www.code-zap.com/my-templates' });
+        }
+
         setTitle('');
-        setFileNames(sourceCodes.map(() => ''));
+        setFileNames([]);
         setSelectedCategoryId(undefined);
         setSourceCodes([]);
+        setStoredTitle('');
+        setStoredCategory(categories[0].id);
+        setStoredFileNames([]);
         chrome.storage.local.remove('sourceCodes');
       } else {
         alert('소스코드 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
@@ -195,20 +241,26 @@ const Popup = () => {
             value={title}
             onChange={handleTitleChange}
           />
-          <select
-            className={styles.categorySelect}
-            value={selectedCategoryId || ''}
-            onChange={handleCategoryChange}
-          >
-            <option value='' disabled>
-              카테고리를 선택해주세요
-            </option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
+          <div className={styles.categoryVisibilityContainer}>
+            <select
+              className={styles.categorySelect}
+              value={selectedCategoryId || ''}
+              onChange={handleCategoryChange}
+            >
+              <option value='' disabled>
+                카테고리를 선택해주세요
               </option>
-            ))}
-          </select>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <VisibilityToggle
+              isPrivate={isPrivate}
+              toggleVisibility={toggleVisibility}
+            />
+          </div>
           {sourceCodes.length === 0 && (
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
           )}

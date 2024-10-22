@@ -47,3 +47,47 @@ export function getStoredUserInfo(): Promise<StoredUserInfo> {
     });
   });
 }
+
+export const setStoredTitle = (title: string): Promise<void> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ title }, () => resolve());
+  });
+};
+
+export const getStoredTitle = (): Promise<string> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('title', (result) => resolve(result.title ?? ''));
+  });
+};
+
+export const setStoredCategory = (
+  categoryId: number | undefined
+): Promise<void> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ selectedCategoryId: categoryId }, () =>
+      resolve()
+    );
+  });
+};
+
+export const getStoredCategory = (): Promise<number | undefined> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('selectedCategoryId', (result) =>
+      resolve(result.selectedCategoryId ?? undefined)
+    );
+  });
+};
+
+export const setStoredFileNames = (fileNames: string[]): Promise<void> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ fileNames }, () => resolve());
+  });
+};
+
+export const getStoredFileNames = (): Promise<string[]> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('fileNames', (result) =>
+      resolve(result.fileNames ?? [])
+    );
+  });
+};
