@@ -45,6 +45,8 @@ const Popup = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const [attachUrl, setAttachUrl] = useState(true);
+
   useEffect(() => {
     const initializePopup = async () => {
       const storedUserInfo = await getStoredUserInfo();
@@ -198,7 +200,7 @@ const Popup = () => {
 
     const requestBody = {
       title,
-      description: urlToDescription(description),
+      description: attachUrl ? urlToDescription(description) : '',
       sourceCodes: sourceCodes.map((code, index) => ({
         filename: fileNames[index],
         content: code,
@@ -241,6 +243,10 @@ const Popup = () => {
     }
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAttachUrl(e.target.checked);
+  };
+
   return (
     <>
       {userInfo.memberId !== undefined ? (
@@ -276,6 +282,17 @@ const Popup = () => {
               isPrivate={isPrivate}
               toggleVisibility={toggleVisibility}
             />
+          </div>
+          <div className={styles.checkboxContainer}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type='checkbox'
+                className={styles.checkboxInput}
+                checked={attachUrl}
+                onChange={handleCheckboxChange}
+              />
+              <span className={styles.checkboxText}>출처 url 첨부</span>
+            </label>
           </div>
           {sourceCodes.length === 0 && (
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>

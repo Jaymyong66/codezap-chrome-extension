@@ -128,3 +128,24 @@
   justify-content: space-between;
   align-items: center;
 }
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+}
+
+.checkboxLabel {
+  font-size: 12px;
+  color: #333;
+}
+
+.checkboxInput {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.checkboxText {
+  vertical-align: middle;
+}
