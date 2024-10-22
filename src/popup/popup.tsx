@@ -184,12 +184,8 @@ const Popup = () => {
   };
 
   const handleUpload = async () => {
-    if (
-      !title ||
-      fileNames.some((fileName) => !fileName) ||
-      !selectedCategoryId
-    ) {
-      alert('제목, 파일명 및 카테고리를 선택해주세요.');
+    if (!title || fileNames.some((fileName) => !fileName)) {
+      alert('제목 및 파일명을 입력해주세요.');
       return;
     }
 
@@ -207,7 +203,7 @@ const Popup = () => {
         ordinal: index + 1,
       })),
       thumbnailOrdinal: 1,
-      categoryId: selectedCategoryId,
+      categoryId: selectedCategoryId ? selectedCategoryId : categories[0].id,
       tags: [],
       visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
     };
