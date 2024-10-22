@@ -91,3 +91,17 @@ export const getStoredFileNames = (): Promise<string[]> => {
     );
   });
 };
+
+export const setStoredDescription = (description: string[]): Promise<void> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ description }, () => resolve());
+  });
+};
+
+export const getStoredDescription = (): Promise<string[]> => {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('description', (result) =>
+      resolve(result.description ?? [])
+    );
+  });
+};
