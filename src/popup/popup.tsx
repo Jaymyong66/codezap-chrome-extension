@@ -243,6 +243,39 @@ const Popup = () => {
     setAttachUrl(e.target.checked);
   };
 
+  const handleAddCategory = async () => {
+    let newCategoryName = prompt('새로운 카테고리명을 입력해주세요:');
+    while (newCategoryName) {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/categories`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ name: newCategoryName }),
+        });
+
+        if (response.ok) {
+          alert('카테고리가 추가되었습니다!');
+          await loadCategories(userInfo.memberId!);
+
+          const body = await response.json();
+          setSelectedCategoryId(body.id);
+          break;
+        } else if (response.status === 409) {
+          newCategoryName = prompt('중복된 카테고리입니다. 다시 입력해주세요:');
+        } else {
+          alert('카테고리 추가에 실패했습니다. 다시 시도해주세요.');
+          break;
+        }
+      } catch (error) {
+        console.error('카테고리 추가 중 에러 발생:', error);
+        break;
+      }
+    }
+  };
+
   return (
     <>
       {userInfo.memberId !== undefined ? (
@@ -260,20 +293,28 @@ const Popup = () => {
             onChange={handleTitleChange}
           />
           <div className={styles.categoryVisibilityContainer}>
-            <select
-              className={styles.categorySelect}
-              value={selectedCategoryId || ''}
-              onChange={handleCategoryChange}
-            >
-              <option value='' disabled>
-                카테고리를 선택해주세요
-              </option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
+            <div className={styles.categoryContainer}>
+              <select
+                className={styles.categorySelect}
+                value={selectedCategoryId || ''}
+                onChange={handleCategoryChange}
+              >
+                <option value='' disabled>
+                  카테고리를 선택해주세요
                 </option>
-              ))}
-            </select>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className={styles.addCategoryButton}
+                onClick={handleAddCategory}
+              >
+                +
+              </button>
+            </div>
             <VisibilityToggle
               isPrivate={isPrivate}
               toggleVisibility={toggleVisibility}
