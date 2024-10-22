@@ -24,6 +24,7 @@ import config from '../../config';
 
 import styles from './popup.module.css';
 import '../styles/reset.css';
+import VisibilityToggle from '../components/VisibilityToggle/VisibilityToggle';
 
 const Popup = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -31,6 +32,7 @@ const Popup = () => {
     memberId: undefined,
   });
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [sourceCodes, setSourceCodes] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [fileNames, setFileNames] = useState<string[]>([]);
@@ -144,6 +146,10 @@ const Popup = () => {
     setStoredCategory(categoryId);
   };
 
+  const toggleVisibility = () => {
+    setIsPrivate(!isPrivate);
+  };
+
   const handleRemoveSourceCode = (index: number) => {
     const newSourceCodes = [...sourceCodes];
     const newFileNames = [...fileNames];
@@ -180,6 +186,7 @@ const Popup = () => {
       thumbnailOrdinal: 1,
       categoryId: selectedCategoryId,
       tags: [],
+      visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
     };
 
     try {
@@ -234,20 +241,26 @@ const Popup = () => {
             value={title}
             onChange={handleTitleChange}
           />
-          <select
-            className={styles.categorySelect}
-            value={selectedCategoryId || ''}
-            onChange={handleCategoryChange}
-          >
-            <option value='' disabled>
-              카테고리를 선택해주세요
-            </option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
+          <div className={styles.categoryVisibilityContainer}>
+            <select
+              className={styles.categorySelect}
+              value={selectedCategoryId || ''}
+              onChange={handleCategoryChange}
+            >
+              <option value='' disabled>
+                카테고리를 선택해주세요
               </option>
-            ))}
-          </select>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <VisibilityToggle
+              isPrivate={isPrivate}
+              toggleVisibility={toggleVisibility}
+            />
+          </div>
           {sourceCodes.length === 0 && (
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
           )}
