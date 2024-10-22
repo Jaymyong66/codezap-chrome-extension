@@ -57,3 +57,22 @@ export const fetchCategories = async (memberId: number) => {
 
   return await response.json();
 };
+
+export const getLoginState = async () => {
+  const url = `${config.API_BASE_URL}/login/check`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('로그인을 해주세요.');
+    }
+    throw new Error('인증되지 않은 사용자입니다.');
+  }
+};

@@ -7,6 +7,7 @@ import {
   fetchCategories,
   Category,
   UserInfo,
+  getLoginState,
 } from '../utils/api';
 import {
   getStoredUserInfo,
@@ -46,6 +47,18 @@ const Popup = () => {
   const [password, setPassword] = useState('');
 
   const [attachUrl, setAttachUrl] = useState(true);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        getLoginState();
+      } catch (error) {
+        await handleLogout();
+      }
+    };
+
+    checkLogin();
+  }, []);
 
   useEffect(() => {
     const initializePopup = async () => {
@@ -127,7 +140,7 @@ const Popup = () => {
         });
         setCategories([]);
         resetTemplateData();
-        alert('로그아웃 성공!');
+        alert('로그아웃 되었어요');
       });
     } catch (error) {
       console.error('로그아웃 에러: ', error);
@@ -258,9 +271,9 @@ const Popup = () => {
 
         if (response.ok) {
           alert('카테고리가 추가되었습니다!');
-          await loadCategories(userInfo.memberId!);
-
           const body = await response.json();
+
+          await loadCategories(userInfo.memberId!);
           setSelectedCategoryId(body.id);
           break;
         } else if (response.status === 409) {
