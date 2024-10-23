@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "코드잽 익스텐션",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "코드잽 템플릿 업로드를 도와주는 익스텐션입니다.",
   "permissions": ["contextMenus", "storage", "scripting", "activeTab"],
   "host_permissions": ["https://code-zap.com/*", "https://www.code-zap.com/*"],

@@ -1,6 +1,6 @@
 {
   "name": "codezap-chrome-extension",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "코드잽 크롬 익스텐션입니다",
   "scripts": {
     "start": "webpack --watch --progress --config webpack.dev.js",
