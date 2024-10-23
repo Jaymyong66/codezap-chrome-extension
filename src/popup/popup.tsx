@@ -330,20 +330,28 @@ const Popup = () => {
               toggleVisibility={toggleVisibility}
             />
           </div>
-          <div className={styles.checkboxContainer}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type='checkbox'
-                className={styles.checkboxInput}
-                checked={attachUrl}
-                onChange={handleCheckboxChange}
-              />
-              <span className={styles.checkboxText}>출처 url 첨부</span>
-            </label>
+          <div style={{ width: '100%' }}>
+            <div className={styles.checkboxContainer}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type='checkbox'
+                  className={styles.checkboxInput}
+                  checked={attachUrl}
+                  onChange={handleCheckboxChange}
+                />
+                <span className={styles.checkboxText}>출처 url 첨부</span>
+              </label>
+            </div>
+            {sourceCodes.length !== 0 && (
+              <div className={styles.filenameMessage}>
+                확장자를 입력하면 코드 스타일이 생겨요
+              </div>
+            )}
           </div>
           {sourceCodes.length === 0 && (
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
           )}
+
           {sourceCodes.map((code, index) => (
             <div key={index} className={styles.sourceCodeContainer}>
               <input
@@ -365,6 +373,7 @@ const Popup = () => {
                   />
                 </pre>
               </div>
+
               <button
                 onClick={() => handleRemoveSourceCode(index)}
                 className={styles.removeButton}
