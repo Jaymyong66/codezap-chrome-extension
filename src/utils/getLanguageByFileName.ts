@@ -21,6 +21,9 @@ export const getLanguageForAutoTag = (filename: string) => {
 };
 
 const getFileExtension = (filename: string) => {
+  if (!filename) {
+    return '';
+  }
   if (filename.includes('.')) {
     const parts = filename.split('.');
 
@@ -30,7 +33,8 @@ const getFileExtension = (filename: string) => {
   return '';
 };
 
-const getLanguageByExtension = (extension: string) => extensionToLanguage[extension] || 'plaintext';
+const getLanguageByExtension = (extension: string) =>
+  extensionToLanguage[extension] || 'plaintext';
 
 const extensionToLanguage: { [key: string]: string } = {
   '1c': '1c',
