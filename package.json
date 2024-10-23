@@ -24,5 +24,8 @@
     "webpack-cli": "^5.1.4"
   },
   "author": "jayMyong66",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "highlight.js": "^11.10.0"
+  }
 }
