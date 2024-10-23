@@ -169,3 +169,23 @@
 
   background-color: white;
 }
+
+.sourceCodeWrapper {
+  max-width: 300px;
+  border: 1px solid black;
+  border-top: 0;
+  border-radius: 0 0 4px 4px;
+  padding: 8px;
+}
+
+.pre {
+  overflow-x: auto;
+  max-width: 100%;
+  text-indent: 0;
+}
+
+.codeBlock {
+  padding: 8px;
+  cursor: auto;
+  text-indent: 0;
+}
