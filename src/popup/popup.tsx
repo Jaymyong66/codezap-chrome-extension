@@ -28,6 +28,9 @@ import styles from './popup.module.css';
 import '../styles/reset.css';
 import VisibilityToggle from '../components/VisibilityToggle/VisibilityToggle';
 import { urlToDescription } from '../utils/urlToDescription';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';
+import { getLanguageByFilename } from '../utils/getLanguageByFileName';
 
 const Popup = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -112,17 +115,11 @@ const Popup = () => {
       loadCategories(memberId);
       alert('로그인에 성공했어요!');
       // 추가
-      console.log('here ', name, memberId);
-      chrome.runtime.sendMessage(
-        {
-          action: 'sendUserInfo',
-          name,
-          memberId,
-        },
-        (response) => {
-          console.log('send message response', response);
-        }
-      );
+      chrome.runtime.sendMessage({
+        action: 'sendUserInfo',
+        name,
+        memberId,
+      });
       // 끝
     } catch (error) {
       console.error('로그인 에러: ', error);
@@ -333,20 +330,28 @@ const Popup = () => {
               toggleVisibility={toggleVisibility}
             />
           </div>
-          <div className={styles.checkboxContainer}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type='checkbox'
-                className={styles.checkboxInput}
-                checked={attachUrl}
-                onChange={handleCheckboxChange}
-              />
-              <span className={styles.checkboxText}>출처 url 첨부</span>
-            </label>
+          <div style={{ width: '100%' }}>
+            <div className={styles.checkboxContainer}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type='checkbox'
+                  className={styles.checkboxInput}
+                  checked={attachUrl}
+                  onChange={handleCheckboxChange}
+                />
+                <span className={styles.checkboxText}>출처 url 첨부</span>
+              </label>
+            </div>
+            {sourceCodes.length !== 0 && (
+              <div className={styles.filenameMessage}>
+                확장자를 입력하면 코드 스타일이 생겨요
+              </div>
+            )}
           </div>
           {sourceCodes.length === 0 && (
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
           )}
+
           {sourceCodes.map((code, index) => (
             <div key={index} className={styles.sourceCodeContainer}>
               <input
@@ -356,13 +361,19 @@ const Popup = () => {
                 value={fileNames[index]}
                 onChange={(e) => handleFileNameChange(index, e.target.value)}
               />
-              <textarea
-                readOnly
-                value={code}
-                rows={4}
-                cols={35}
-                className={styles.sourceCodeTextArea}
-              />
+              <div className={styles.sourceCodeWrapper}>
+                <pre className={styles.pre}>
+                  <code
+                    className={styles.codeBlock}
+                    dangerouslySetInnerHTML={{
+                      __html: hljs.highlight(code, {
+                        language: getLanguageByFilename(fileNames[index]),
+                      }).value,
+                    }}
+                  />
+                </pre>
+              </div>
+
               <button
                 onClick={() => handleRemoveSourceCode(index)}
                 className={styles.removeButton}
