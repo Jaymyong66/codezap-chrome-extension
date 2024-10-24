@@ -1,4 +1,9 @@
-import { getStoredSourceCodes, setStoredSourceCodes } from '../utils/storage';
+import {
+  getStoredDescription,
+  getStoredSourceCodes,
+  setStoredDescription,
+  setStoredSourceCodes,
+} from '../utils/storage';
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'pageLoaded') {
@@ -36,11 +41,16 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       })
       .then((selectionArray) => {
         const selectedText = selectionArray[0]?.result || '';
+        const tabUrl = tab?.url;
 
         if (selectedText) {
-          getStoredSourceCodes().then((codes) => {
-            setStoredSourceCodes([...codes, selectedText]).then(() => {
-              chrome.action.openPopup();
+          getStoredDescription().then((descriptions) => {
+            setStoredDescription([...descriptions, tabUrl]).then(() => {
+              getStoredSourceCodes().then((codes) => {
+                setStoredSourceCodes([...codes, selectedText]).then(() => {
+                  chrome.action.openPopup();
+                });
+              });
             });
           });
         }

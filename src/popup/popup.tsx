@@ -7,6 +7,7 @@ import {
   fetchCategories,
   Category,
   UserInfo,
+  getLoginState,
 } from '../utils/api';
 import {
   getStoredUserInfo,
@@ -19,12 +20,14 @@ import {
   setStoredTitle,
   setStoredCategory,
   setStoredFileNames,
+  getStoredDescription,
 } from '../utils/storage';
 import config from '../../config';
 
 import styles from './popup.module.css';
 import '../styles/reset.css';
 import VisibilityToggle from '../components/VisibilityToggle/VisibilityToggle';
+import { urlToDescription } from '../utils/urlToDescription';
 
 const Popup = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -39,8 +42,23 @@ const Popup = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     number | undefined
   >(undefined);
+  const [description, setDescription] = useState<string[]>([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const [attachUrl, setAttachUrl] = useState(true);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        getLoginState();
+      } catch (error) {
+        await handleLogout();
+      }
+    };
+
+    checkLogin();
+  }, []);
 
   useEffect(() => {
     const initializePopup = async () => {
@@ -49,6 +67,7 @@ const Popup = () => {
       const storedTitle = await getStoredTitle();
       const storedCategoryId = await getStoredCategory();
       const storedFileNames = await getStoredFileNames();
+      const storedDescription = await getStoredDescription();
 
       if (storedUserInfo && storedUserInfo.memberId) {
         setUserInfo(storedUserInfo);
@@ -66,6 +85,7 @@ const Popup = () => {
 
       setTitle(storedTitle);
       setSelectedCategoryId(storedCategoryId);
+      setDescription(storedDescription);
     };
 
     initializePopup();
@@ -119,7 +139,8 @@ const Popup = () => {
           memberId: undefined,
         });
         setCategories([]);
-        alert('로그아웃 성공!');
+        resetTemplateData();
+        alert('로그아웃 되었어요');
       });
     } catch (error) {
       console.error('로그아웃 에러: ', error);
@@ -153,20 +174,31 @@ const Popup = () => {
   const handleRemoveSourceCode = (index: number) => {
     const newSourceCodes = [...sourceCodes];
     const newFileNames = [...fileNames];
+    const newDescription = [...description];
     newSourceCodes.splice(index, 1);
     newFileNames.splice(index, 1);
+    newDescription.splice(index, 1);
     setSourceCodes(newSourceCodes);
     setFileNames(newFileNames);
     setStoredSourceCodes(newSourceCodes);
   };
 
+  const resetTemplateData = () => {
+    setTitle('');
+    setFileNames([]);
+    setSelectedCategoryId(undefined);
+    setSourceCodes([]);
+    setStoredTitle('');
+    setStoredCategory(categories[0].id);
+    setStoredFileNames([]);
+    setDescription([]);
+    chrome.storage.local.remove('sourceCodes');
+    chrome.storage.local.remove('description');
+  };
+
   const handleUpload = async () => {
-    if (
-      !title ||
-      fileNames.some((fileName) => !fileName) ||
-      !selectedCategoryId
-    ) {
-      alert('제목, 파일명 및 카테고리를 선택해주세요.');
+    if (!title || fileNames.some((fileName) => !fileName)) {
+      alert('제목 및 파일명을 입력해주세요.');
       return;
     }
 
@@ -177,14 +209,14 @@ const Popup = () => {
 
     const requestBody = {
       title,
-      description: '사용자가 생성한 코드 템플릿',
+      description: attachUrl ? urlToDescription(description) : '',
       sourceCodes: sourceCodes.map((code, index) => ({
         filename: fileNames[index],
         content: code,
         ordinal: index + 1,
       })),
       thumbnailOrdinal: 1,
-      categoryId: selectedCategoryId,
+      categoryId: selectedCategoryId ? selectedCategoryId : categories[0].id,
       tags: [],
       visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
     };
@@ -205,23 +237,55 @@ const Popup = () => {
             '소스코드가 성공적으로 업로드되었어요! 코드잽에서 확인해볼까요?'
           )
         ) {
-          chrome.tabs.create({ url: 'https://www.code-zap.com/my-templates' });
+          chrome.tabs.create({
+            url: `https://www.code-zap.com/members/${userInfo.memberId}/templates`,
+          });
         }
 
-        setTitle('');
-        setFileNames([]);
-        setSelectedCategoryId(undefined);
-        setSourceCodes([]);
-        setStoredTitle('');
-        setStoredCategory(categories[0].id);
-        setStoredFileNames([]);
-        chrome.storage.local.remove('sourceCodes');
+        resetTemplateData();
       } else {
         alert('소스코드 업로드에 실패했어요. 잠시 후 다시 시도해주세요.');
       }
     } catch (error) {
       console.error('업로드 중 에러 발생:', error);
       alert('소스코드 업로드 중 에러가 발생했어요. 잠시 후 다시 시도해주세요.');
+    }
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAttachUrl(e.target.checked);
+  };
+
+  const handleAddCategory = async () => {
+    let newCategoryName = prompt('새로운 카테고리명을 입력해주세요:');
+    while (newCategoryName) {
+      try {
+        const response = await fetch(`${config.API_BASE_URL}/categories`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ name: newCategoryName }),
+        });
+
+        if (response.ok) {
+          alert('카테고리가 추가되었습니다!');
+          const body = await response.json();
+
+          await loadCategories(userInfo.memberId!);
+          setSelectedCategoryId(body.id);
+          break;
+        } else if (response.status === 409) {
+          newCategoryName = prompt('중복된 카테고리입니다. 다시 입력해주세요:');
+        } else {
+          alert('카테고리 추가에 실패했습니다. 다시 시도해주세요.');
+          break;
+        }
+      } catch (error) {
+        console.error('카테고리 추가 중 에러 발생:', error);
+        break;
+      }
     }
   };
 
@@ -242,24 +306,43 @@ const Popup = () => {
             onChange={handleTitleChange}
           />
           <div className={styles.categoryVisibilityContainer}>
-            <select
-              className={styles.categorySelect}
-              value={selectedCategoryId || ''}
-              onChange={handleCategoryChange}
-            >
-              <option value='' disabled>
-                카테고리를 선택해주세요
-              </option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
+            <div className={styles.categoryContainer}>
+              <select
+                className={styles.categorySelect}
+                value={selectedCategoryId || ''}
+                onChange={handleCategoryChange}
+              >
+                <option value='' disabled>
+                  카테고리를 선택해주세요
                 </option>
-              ))}
-            </select>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className={styles.addCategoryButton}
+                onClick={handleAddCategory}
+              >
+                +
+              </button>
+            </div>
             <VisibilityToggle
               isPrivate={isPrivate}
               toggleVisibility={toggleVisibility}
             />
+          </div>
+          <div className={styles.checkboxContainer}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type='checkbox'
+                className={styles.checkboxInput}
+                checked={attachUrl}
+                onChange={handleCheckboxChange}
+              />
+              <span className={styles.checkboxText}>출처 url 첨부</span>
+            </label>
           </div>
           {sourceCodes.length === 0 && (
             <div>원하는 소스코드를 드래그 후 우클릭 하여 추가해보세요</div>
